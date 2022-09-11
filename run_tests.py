@@ -23,6 +23,7 @@ def files_match(file_one, file_two) -> bool:
     return True
 
 def main() -> None:
+    all_matched = True
     csvs = []
     for input_file in INPUT_FILES:
         for loop in LOOPS:
@@ -37,16 +38,16 @@ def main() -> None:
                     csv.append(time)
                 if not files_match(f"out/out_{input_file}", f"temp.txt"):
                     print(f"{input_file} with thread: {thread} loop: {loop} does not match.")
-
+                    all_matched = False
             csvs.append(csv)
 
     header = ["microseconds"] + [str(x) for x in THREADS]
 
-    print("\n")
     print(", ".join(header))
     for csv in csvs:
         print (", ".join(csv))
-
+    if all_matched:
+        print("ALL TESTS PASSED")
 
 if __name__ == "__main__":
     main()
