@@ -1,10 +1,10 @@
 #include <iostream>
-#include <argparse.h>
-#include <threads.h>
-#include <io.h>
+#include "threads.h"
 #include <chrono>
 #include <cstring>
 #include "operators.h"
+#include "io.h"
+#include "argparse.h"
 #include "helpers.h"
 #include "prefix_sum.h"
 
@@ -33,8 +33,8 @@ int main(int argc, char **argv)
 
     //"op" is the operator you have to use, but you can use "add" to test
     int (*scan_operator)(int, int, int);
-    scan_operator = op;
-    //scan_operator = add;
+    // scan_operator = op;
+    scan_operator = add;
 
     fill_args(ps_args, opts.n_threads, n_vals, input_vals, output_vals,
         opts.spin, scan_operator, opts.n_loops);
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
         }
     }
     else {
-        //start_threads(threads, opts.n_threads, ps_args, <your function>);
+        start_threads(threads, opts.n_threads, ps_args, compute_prefix_sum);
 
         // Wait for threads to finish
         join_threads(threads, opts.n_threads);

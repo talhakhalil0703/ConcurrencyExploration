@@ -29,5 +29,3 @@ for name, sz in INPUTS.items():
         f.write("64\n")
         for i in range(64):
             f.write("{}\n".format(i))
-
-    

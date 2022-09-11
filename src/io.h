@@ -1,8 +1,8 @@
 #ifndef _IO_H
 #define _IO_H
 
-#include <argparse.h>
-#include <prefix_sum.h>
+#include "argparse.h"
+#include "prefix_sum.h"
 #include <iostream>
 #include <fstream>
 

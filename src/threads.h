@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <iostream>
-#include <prefix_sum.h>
+#include "prefix_sum.h"
 #include "helpers.h"
 
 pthread_t* alloc_threads(int n_threads);

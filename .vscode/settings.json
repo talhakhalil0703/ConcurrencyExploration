@@ -1,0 +1,14 @@
+{
+    "spellright.language": [
+        "en-GB-10-1."
+    ],
+    "spellright.documentTypes": [
+        "latex",
+        "plaintext",
+        "markdown"
+    ],
+    "files.associations": {
+        "tuple": "cpp",
+        "cmath": "cpp"
+    }
+}

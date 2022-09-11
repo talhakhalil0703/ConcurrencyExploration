@@ -4,33 +4,49 @@ from subprocess import check_output
 import re
 from time import sleep
 
-#
-#  Feel free (a.k.a. you have to) to modify this to instrument your code
-#
+THREADS = [1]
+LOOPS = [1]
+INPUT_FILES = ["seq_64_test.txt", "1k.txt", "8k.txt", "16k.txt"]
 
-THREADS = [0]
-LOOPS = [1, 10]
-INPUTS = ["seq_64_test.txt"]
+def files_match(file_one, file_two) -> bool:
+    first = []
+    second = []
+    with open(file_one, "r") as file:
+        first  = file.readlines()
+    with open(file_two, "r") as file:
+        second = file.readlines()
 
-csvs = []
-for inp in INPUTS:
-    for loop in LOOPS:
-        csv = ["{}/{}".format(inp, loop)]
-        for thr in THREADS:
-            cmd = "./bin/prefix_scan -o temp.txt -n {} -i tests/{} -l {}".format(
-                thr, inp, loop)
-            out = check_output(cmd, shell=True).decode("ascii")
-            m = re.search("time: (.*)", out)
-            if m is not None:
-                time = m.group(1)
-                csv.append(time)
+    for index, value in enumerate(first):
+        if value != second[index]:
+            return False
 
-        csvs.append(csv)
-        sleep(0.5)
+    return True
 
-header = ["microseconds"] + [str(x) for x in THREADS]
+def main() -> None:
+    csvs = []
+    for input_file in INPUT_FILES:
+        for loop in LOOPS:
+            csv = [f"{input_file}/{loop}"]
+            for thread in THREADS:
+                cmd = "./bin/prefix_scan -o temp.txt -n {} -i tests/{} -l {}".format(
+                    thread, input_file, loop)
+                out = check_output(cmd, shell=True).decode("ascii")
+                m = re.search("time: (.*)", out)
+                if m is not None:
+                    time = m.group(1)
+                    csv.append(time)
+                if not files_match(f"out/out_{input_file}", f"temp.txt"):
+                    print(f"{input_file} with thread: {thread} loop: {loop} does not match.")
 
-print("\n")
-print(", ".join(header))
-for csv in csvs:
-    print (", ".join(csv))
+            csvs.append(csv)
+
+    header = ["microseconds"] + [str(x) for x in THREADS]
+
+    print("\n")
+    print(", ".join(header))
+    for csv in csvs:
+        print (", ".join(csv))
+
+
+if __name__ == "__main__":
+    main()

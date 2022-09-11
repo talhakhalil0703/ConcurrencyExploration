@@ -1,4 +1,4 @@
-#include <io.h>
+#include "io.h"
 #include "helpers.h"
 
 void read_file(struct options_t* args,
@@ -35,8 +35,8 @@ void write_file(struct options_t*         args,
 
 	out.flush();
 	out.close();
-	
+
 	// Free memory
 	free(opts->input_vals);
-	free(opts->output_vals);
+	// free(opts->output_vals);
 }
