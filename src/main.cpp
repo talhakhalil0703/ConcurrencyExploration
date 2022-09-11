@@ -9,7 +9,8 @@
 #include "prefix_sum.h"
 
 using namespace std;
-
+extern pthread_barrier_t barrier;
+extern pthread_mutex_t intermediate_array_lock;
 int main(int argc, char **argv)
 {
     // Parse args
@@ -51,6 +52,8 @@ int main(int argc, char **argv)
         }
     }
     else {
+        pthread_barrier_init(&barrier, NULL, ps_args->n_threads);
+        pthread_mutex_init(&intermediate_array_lock, NULL);
         start_threads(threads, opts.n_threads, ps_args, compute_prefix_sum);
 
         // Wait for threads to finish
