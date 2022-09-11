@@ -6,26 +6,9 @@
 #include "strings.h"
 
 static void up_sweep(void *a);
-static void copy_input(void *a);
 static void down_sweep(void *a);
 
 void *compute_prefix_sum(void *a) {
-  // The stride gets doubled every iteration
-  // Each thread should compute it's assigned values, but how do we know what
-  // it's assigned values are?
-  //   prefix_sum_args_t *args = (prefix_sum_args_t *)a;
-  //   int *output = args->output_vals;
-  //   int *input = args->input_vals;
-  //   int n_vals = args->n_vals;
-  //   int (*scan_operator)(int, int, int) = args->op;
-  //   output[0] = input[0];
-
-  //   for (int i = 1; i < n_vals; ++i) {
-  //     // y_i = y_{i-1}  <op>  x_i
-  //     output[i] = scan_operator(output[i - 1], input[i], args->n_loops);
-  //   }
-
-  copy_input(a);
   up_sweep(a);
   down_sweep(a);
   return 0;
@@ -51,7 +34,7 @@ static void up_sweep(void *a) {
   for (int d = 0; d < depth; d++) {
     int two_d_1 = pow(2, d + 1);
     int two_d = pow(2, d);
-    for (int k = 0; k < n - 1; k += two_d_1) {
+    for (int k = 0; k < n-1; k += two_d_1) {
       output[k + two_d_1 - 1] = scan_operator(
           output[k + two_d - 1], output[k + two_d_1 - 1], args->n_loops);
       std::cout << k + two_d_1 - 1 << ":" << output[k + two_d_1 - 1]
@@ -82,21 +65,10 @@ static void down_sweep(void *a) {
   }
 
 
-  //Making it exclusive
+  //Making it exclusive by shifting the array as well as appending the final sum to the end
   for (int i =0; i < n-1; i++){
     output[i] = output[i+1];
   }
   output[n-1] = final_value;
 
-}
-
-static void copy_input(void *a) {
-  prefix_sum_args_t *args = (prefix_sum_args_t *)a;
-  int *output = args->output_vals;
-  int *input = args->input_vals;
-  int n_vals = args->n_vals;
-
-  for (int i = 0; i < n_vals; i++) {
-    output[i] = input[i];
-  }
 }

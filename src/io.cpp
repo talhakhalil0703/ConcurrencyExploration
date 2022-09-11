@@ -14,7 +14,7 @@ void read_file(struct options_t* args,
 
 	// Alloc input and output arrays
 	*input_vals = (int*) malloc(*n_vals * sizeof(int));
-	*output_vals = (int*) malloc(*n_vals * sizeof(int));
+	*output_vals = (*input_vals);
 
 	// Read input vals
 	for (int i = 0; i < *n_vals; ++i) {
