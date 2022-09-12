@@ -6,7 +6,7 @@ OPTS = -std=c++17 -Wall -Werror -lpthread
 EXEC = bin/prefix_scan
 EXEC_DEBUG = bin/prefix_scan_debug
 
-all: clean compile
+all: clean compile test
 debug: compile_debug
 
 compile_debug:
@@ -17,3 +17,6 @@ compile:
 
 clean:
 	rm -f $(EXEC)
+
+test:
+	python run_tests.py
