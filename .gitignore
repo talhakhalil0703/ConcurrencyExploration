@@ -33,3 +33,7 @@
 
 # Folders
 bin/
+tests/
+out/
+
+temp.txt
