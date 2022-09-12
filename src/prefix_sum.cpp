@@ -6,11 +6,10 @@
 #include "strings.h"
 
 struct thread_data_t {
-  int32_t starting_index;
   int32_t block_size;
-  uint32_t n_loops;
   int *output;
   int (*scan_operator)(int, int, int);
+  uint32_t n_loops;
 };
 
 pthread_barrier_t barrier;
@@ -28,10 +27,10 @@ void *compute_prefix_sum(void *a) {
   // Needs a start value, end value, needs pointer to data, needs thread id,
   // needs operator
   thread_data_t thread_data;
-  thread_data.starting_index = args->t_id * block_size;
+  // thread_data.starting_index = args->t_id * block_size;
   thread_data.block_size = block_size;
   thread_data.n_loops = args->n_loops;
-  thread_data.output = args->output_vals;
+  thread_data.output = &(args->output_vals[args->t_id * block_size]);
   thread_data.scan_operator = args->op;
   prefix_scan(&thread_data);
 
@@ -51,7 +50,8 @@ void *compute_prefix_sum(void *a) {
     intermediate_prefix_scan.output = intermediate_array;
     intermediate_prefix_scan.block_size = args->n_threads;
     intermediate_prefix_scan.scan_operator = args->op;
-    intermediate_prefix_scan.starting_index = 0;
+    intermediate_prefix_scan.n_loops = args->n_loops;
+    // intermediate_prefix_scan.starting_index = 0;
     prefix_scan(&intermediate_prefix_scan);
   }
   pthread_barrier_wait(&barrier);
@@ -73,16 +73,16 @@ void *compute_prefix_sum(void *a) {
 
 static void prefix_scan(thread_data_t *thread_data) {
   std::cout << "Before Scan" << std::endl;
-  for (int k = thread_data->starting_index; k < thread_data->block_size + thread_data->starting_index -1; k++) {
-    std::cout << thread_data->starting_index << " : " << k << " : " << thread_data->output[k] << std::endl;
-  }
+  // for (int k = 0; k < thread_data->block_size + thread_data->starting_index -1; k++) {
+  //   std::cout  " : " << k << " : " << thread_data->output[k] << std::endl;
+  // }
   up_sweep(thread_data);
   down_sweep(thread_data);
 
-  std::cout << "After Scan" << std::endl;
-  for (int k = thread_data->starting_index; k < thread_data->block_size + thread_data->starting_index -1; k++) {
-    std::cout << thread_data->starting_index << " : " << k << " : " << thread_data->output[k] << std::endl;
-  }
+  // std::cout << "After Scan" << std::endl;
+  // for (int k = thread_data->starting_index; k < thread_data->block_size + thread_data->starting_index -1; k++) {
+  //   std::cout << thread_data->starting_index << " : " << k << " : " << thread_data->output[k] << std::endl;
+  // }
 }
 
 static void up_sweep(thread_data_t *thread_data) {
@@ -105,7 +105,7 @@ static void up_sweep(thread_data_t *thread_data) {
   for (int d = 0; d < depth; d++) {
     int two_d_1 = pow(2, d + 1);
     int two_d = pow(2, d);
-    for (int k = thread_data->starting_index; k < thread_data->block_size + thread_data->starting_index - 1; k += two_d_1) {
+    for (int k = 0; k < n - 1; k += two_d_1) {
       output[k + two_d_1 - 1] = scan_operator(output[k + two_d - 1], output[k + two_d_1 - 1], thread_data->n_loops);
       std::cout << "Up sweep: " << d << " " << k + two_d_1 - 1 << ":" << output[k + two_d_1 - 1] << std::endl;
     }
@@ -117,15 +117,15 @@ static void down_sweep(thread_data_t *thread_data) {
   int n = thread_data->block_size;
   int (*scan_operator)(int, int, int) = thread_data->scan_operator;
 
-  int final_value = output[thread_data->starting_index + thread_data->block_size - 1];
-  output[thread_data->starting_index + thread_data->block_size - 1] = 0;
+  int final_value = output[n - 1];
+  output[n - 1] = 0;
   double depth = log2(n - 1);
   int temp = 0;
 
   for (int d = depth; d >= 0; d--) {
     int two_d_1 = pow(2, d + 1);
     int two_d = pow(2, d);
-    for (int k = thread_data->starting_index; k < thread_data->starting_index + thread_data->block_size - 1; k += two_d_1) {
+    for (int k = 0; k < n - 1; k += two_d_1) {
       temp = output[k + two_d - 1];
       output[k + two_d - 1] = output[k + two_d_1 - 1];
       output[k + two_d_1 - 1] = scan_operator(temp, output[k + two_d_1 - 1], thread_data->n_loops);
@@ -135,14 +135,14 @@ static void down_sweep(thread_data_t *thread_data) {
 
   // Making it exclusive by shifting the array as well as appending the final
   // sum to the end
-  for (int i = thread_data->starting_index; i < thread_data->starting_index + thread_data->block_size - 1; i++) {
+  for (int i = 0; i < n - 1; i++) {
     output[i] = output[i + 1];
   }
-  output[thread_data->starting_index + thread_data->block_size - 1] = final_value;
+  output[n - 1] = final_value;
 }
 
 static void perform_increment(thread_data_t *thread_data, int32_t value) {
-  for (int i = thread_data->starting_index; i < thread_data->starting_index + thread_data->block_size; i++) {
+  for (int i = 0; i < thread_data->block_size; i++) {
     thread_data->output[i] = thread_data->output[i] + value;
   }
 }
