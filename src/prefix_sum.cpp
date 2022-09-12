@@ -24,21 +24,19 @@ static void prefix_scan(thread_data_t *t);
 void *compute_prefix_sum(void *a) {
   prefix_sum_args_t *args = (prefix_sum_args_t *)a;
 
-  int block_size = args->n_vals / args->n_threads;
+  int block_size = args->block_size;
   // Needs a start value, end value, needs pointer to data, needs thread id,
   // needs operator
-  thread_data_t first;
-  first.starting_index = args->t_id * block_size;
-  first.block_size = block_size;
-  first.n_loops = args->n_loops;
-  first.output = args->output_vals;
-  first.scan_operator = args->op;
-  prefix_scan(&first);
+  thread_data_t thread_data;
+  thread_data.starting_index = args->t_id * block_size;
+  thread_data.block_size = block_size;
+  thread_data.n_loops = args->n_loops;
+  thread_data.output = args->output_vals;
+  thread_data.scan_operator = args->op;
+  prefix_scan(&thread_data);
 
   if (pthread_barrier_wait(&barrier) != 0) {
     std::cout << "Intermediate Array" << std::endl;
-    // mutex lock
-    std::cout << "CAPTURED Intermediate Array" << std::endl;
 
     // Take all scans and now perform aggergate the sum of each block
     intermediate_array = (int *)malloc(args->n_threads * sizeof(int));
@@ -54,14 +52,13 @@ void *compute_prefix_sum(void *a) {
     intermediate_prefix_scan.block_size = args->n_threads;
     intermediate_prefix_scan.scan_operator = args->op;
     intermediate_prefix_scan.starting_index = 0;
-    // mutex unlock
     prefix_scan(&intermediate_prefix_scan);
   }
   pthread_barrier_wait(&barrier);
 
   // perform addition per thread
   if (args->t_id > 0) {
-    perform_increment(&first, intermediate_array[args->t_id - 1]);
+    perform_increment(&thread_data, intermediate_array[args->t_id - 1]);
   }
 
   // barrier wait here
@@ -76,14 +73,14 @@ void *compute_prefix_sum(void *a) {
 
 static void prefix_scan(thread_data_t *thread_data) {
   std::cout << "Before Scan" << std::endl;
-  for (int k = thread_data->starting_index; k < thread_data->block_size + thread_data->starting_index; k++) {
+  for (int k = thread_data->starting_index; k < thread_data->block_size + thread_data->starting_index -1; k++) {
     std::cout << thread_data->starting_index << " : " << k << " : " << thread_data->output[k] << std::endl;
   }
   up_sweep(thread_data);
   down_sweep(thread_data);
 
   std::cout << "After Scan" << std::endl;
-  for (int k = thread_data->starting_index; k < thread_data->block_size + thread_data->starting_index; k++) {
+  for (int k = thread_data->starting_index; k < thread_data->block_size + thread_data->starting_index -1; k++) {
     std::cout << thread_data->starting_index << " : " << k << " : " << thread_data->output[k] << std::endl;
   }
 }
