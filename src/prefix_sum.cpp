@@ -14,7 +14,6 @@ struct thread_data_t {
 };
 
 pthread_barrier_t barrier;
-pthread_mutex_t intermediate_array_lock;
 
 static int *intermediate_array;
 static void up_sweep(thread_data_t *a);
@@ -40,44 +39,38 @@ void *compute_prefix_sum(void *a) {
   if (pthread_barrier_wait(&barrier) != 0) {
     std::cout << "Intermediate Array" << std::endl;
     // mutex lock
-    if (pthread_mutex_trylock(&intermediate_array_lock) == 0) {
-      std::cout << "CAPTURED Intermediate Array" << std::endl;
+    std::cout << "CAPTURED Intermediate Array" << std::endl;
 
-      // Take all scans and now perform aggergate the sum of each block
-      intermediate_array = (int *)malloc(args->n_threads * sizeof(int));
-      for (int i = 0; i < args->n_threads; i++) {
-        // From output and block size we should know where these sums are
-        // located and can create a new array
-        intermediate_array[i] = args->output_vals[(i + 1) * block_size - 1];
-      }
-      // Perform prefix scan on intermediate array that is shared by everyone
-      // here
-      thread_data_t intermediate_prefix_scan;
-      intermediate_prefix_scan.output = intermediate_array;
-      intermediate_prefix_scan.block_size = args->n_threads;
-      intermediate_prefix_scan.scan_operator = args->op;
-      intermediate_prefix_scan.starting_index = 0;
-      // mutex unlock
-      perform_block_prefix_scan(&intermediate_prefix_scan);
-      pthread_mutex_unlock(&intermediate_array_lock);
+    // Take all scans and now perform aggergate the sum of each block
+    intermediate_array = (int *)malloc(args->n_threads * sizeof(int));
+    for (int i = 0; i < args->n_threads; i++) {
+      // From output and block size we should know where these sums are
+      // located and can create a new array
+      intermediate_array[i] = args->output_vals[(i + 1) * block_size - 1];
     }
+    // Perform prefix scan on intermediate array that is shared by everyone
+    // here
+    thread_data_t intermediate_prefix_scan;
+    intermediate_prefix_scan.output = intermediate_array;
+    intermediate_prefix_scan.block_size = args->n_threads;
+    intermediate_prefix_scan.scan_operator = args->op;
+    intermediate_prefix_scan.starting_index = 0;
+    // mutex unlock
+    perform_block_prefix_scan(&intermediate_prefix_scan);
   }
   // Wait only if thread count is greater than 1
   pthread_barrier_wait(&barrier);
 
   // perform addition per thread
-  if (args->t_id > 0){
-    perform_increment(&first, intermediate_array[args->t_id-1]);
+  if (args->t_id > 0) {
+    perform_increment(&first, intermediate_array[args->t_id - 1]);
   }
 
   // barrier wait here
   // Wait only if thread count is greater than 1
   if (pthread_barrier_wait(&barrier) != 0) {
     // free intermediate array memory
-    if (pthread_mutex_trylock(&intermediate_array_lock) == 0) {
-      free(intermediate_array);
-      pthread_mutex_unlock(&intermediate_array_lock);
-    }
+    free(intermediate_array);
   }
   // Wait only if thread count is greater than 1
   pthread_barrier_wait(&barrier);
@@ -131,8 +124,8 @@ static void down_sweep(thread_data_t *thread_data) {
   int n = thread_data->block_size;
   int (*scan_operator)(int, int, int) = thread_data->scan_operator;
 
-  int final_value = output[thread_data->starting_index+thread_data->block_size - 1];
-  output[thread_data->starting_index+thread_data->block_size - 1] = 0;
+  int final_value = output[thread_data->starting_index + thread_data->block_size - 1];
+  output[thread_data->starting_index + thread_data->block_size - 1] = 0;
   double depth = log2(n - 1);
   int temp = 0;
 
@@ -149,10 +142,10 @@ static void down_sweep(thread_data_t *thread_data) {
 
   // Making it exclusive by shifting the array as well as appending the final
   // sum to the end
-  for (int i = thread_data->starting_index; i < thread_data->starting_index+thread_data->block_size - 1; i++) {
+  for (int i = thread_data->starting_index; i < thread_data->starting_index + thread_data->block_size - 1; i++) {
     output[i] = output[i + 1];
   }
-  output[thread_data->starting_index+thread_data->block_size - 1] = final_value;
+  output[thread_data->starting_index + thread_data->block_size - 1] = final_value;
 }
 
 static void perform_increment(thread_data_t *thread_data, int32_t value) {
