@@ -19,7 +19,7 @@ static int *intermediate_array;
 static void up_sweep(thread_data_t *a);
 static void down_sweep(thread_data_t *a);
 static void perform_increment(thread_data_t *t, int32_t value);
-static void perform_block_prefix_scan(thread_data_t *t);
+static void prefix_scan(thread_data_t *t);
 
 void *compute_prefix_sum(void *a) {
   prefix_sum_args_t *args = (prefix_sum_args_t *)a;
@@ -33,9 +33,8 @@ void *compute_prefix_sum(void *a) {
   first.n_loops = args->n_loops;
   first.output = args->output_vals;
   first.scan_operator = args->op;
-  perform_block_prefix_scan(&first);
+  prefix_scan(&first);
 
-  // Wait only if thread count is greater than 1
   if (pthread_barrier_wait(&barrier) != 0) {
     std::cout << "Intermediate Array" << std::endl;
     // mutex lock
@@ -56,9 +55,8 @@ void *compute_prefix_sum(void *a) {
     intermediate_prefix_scan.scan_operator = args->op;
     intermediate_prefix_scan.starting_index = 0;
     // mutex unlock
-    perform_block_prefix_scan(&intermediate_prefix_scan);
+    prefix_scan(&intermediate_prefix_scan);
   }
-  // Wait only if thread count is greater than 1
   pthread_barrier_wait(&barrier);
 
   // perform addition per thread
@@ -67,18 +65,16 @@ void *compute_prefix_sum(void *a) {
   }
 
   // barrier wait here
-  // Wait only if thread count is greater than 1
   if (pthread_barrier_wait(&barrier) != 0) {
     // free intermediate array memory
     free(intermediate_array);
   }
-  // Wait only if thread count is greater than 1
   pthread_barrier_wait(&barrier);
 
   return 0;
 }
 
-static void perform_block_prefix_scan(thread_data_t *thread_data) {
+static void prefix_scan(thread_data_t *thread_data) {
   std::cout << "Before Scan" << std::endl;
   for (int k = thread_data->starting_index; k < thread_data->block_size + thread_data->starting_index; k++) {
     std::cout << thread_data->starting_index << " : " << k << " : " << thread_data->output[k] << std::endl;
