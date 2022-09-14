@@ -19,7 +19,7 @@ void *compute_prefix_sum(void *a) {
     pthread_barrier_wait(&barrier);
     for (int iteration = 0; ; iteration += 1) {
       int right =  (thread_id+(iteration*threads)+1)*d-1;
-      if (right > n) break;
+      if (right > args->n_vals) break;
       int left = right - (d >> 1);
       output[right] = args->op(output[left], output[right], args->n_loops);
     }
