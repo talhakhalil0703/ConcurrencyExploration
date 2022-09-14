@@ -10,7 +10,7 @@ pthread_barrier_t barrier;
 void *compute_prefix_sum(void *a) {
   prefix_sum_args_t *args = (prefix_sum_args_t *)a;
 
-  int n = args->n_vals;
+  int n = args->modified_size_of_vals;
   int threads = args->n_threads;
   int thread_id = args->t_id;
   int * output = args->output_vals;

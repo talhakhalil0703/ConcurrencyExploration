@@ -15,6 +15,7 @@ struct prefix_sum_args_t {
   int (*op)(int, int, int);
   int n_loops;
   int block_size;
+  int modified_size_of_vals;
 };
 
 prefix_sum_args_t* alloc_args(int n_threads);

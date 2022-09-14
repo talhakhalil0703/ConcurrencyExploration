@@ -33,8 +33,8 @@ int main(int argc, char **argv)
 
     //"op" is the operator you have to use, but you can use "add" to test
     int (*scan_operator)(int, int, int);
-    // scan_operator = op;
-    scan_operator = add;
+    scan_operator = op;
+    // scan_operator = add;
 
     fill_args(ps_args, opts.n_threads, n_vals, input_vals, output_vals,
         opts.spin, scan_operator, opts.n_loops);
