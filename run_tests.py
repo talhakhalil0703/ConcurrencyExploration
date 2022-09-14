@@ -4,7 +4,7 @@ from subprocess import check_output
 import re
 from time import sleep
 
-THREADS = [1, 2, 4, 8, 16]
+THREADS = [1, 2, 4, 6, 8, 10, 12 ,14,  16]
 LOOPS = [1]
 INPUT_FILES = ["seq_64_test.txt", "1k.txt", "8k.txt", "16k.txt"]
 
