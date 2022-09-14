@@ -51,25 +51,6 @@ int main(int argc, char **argv)
         }
     }
     else {
-        std::cout << "FULL INPUT" << std::endl;
-        int32_t block_size = ps_args->n_vals/ps_args->n_threads;
-        int32_t block_remainder = ps_args->n_vals%ps_args->n_threads;
-        int32_t new_array_size =0;
-
-        if (block_remainder != 0)
-        {
-            block_size++;
-            new_array_size = ps_args->n_vals + (ps_args->n_threads-block_remainder);
-        }else {
-            new_array_size = ps_args->n_vals;
-        }
-
-        // for(int i =0; i < new_array_size; i++){
-        //     std::cout << ps_args->output_vals[i] << std::endl;
-        // }
-        std::cout << "END OF FULL INPUT" << std::endl;
-        std::cout << "Number of inputs now: " << new_array_size << ", block_size is "<< block_size << ", number of threads is "<< ps_args->n_threads << std::endl;
-
         pthread_barrier_init(&barrier, NULL, ps_args->n_threads);
         start_threads(threads, opts.n_threads, ps_args, compute_prefix_sum);
 
