@@ -7,9 +7,12 @@
 #include "argparse.h"
 #include "helpers.h"
 #include "prefix_sum.h"
+#include "spin_barrier.h"
 
 using namespace std;
 extern pthread_barrier_t barrier;
+extern spin_barrier custom_barrier;
+
 int main(int argc, char **argv)
 {
     // Parse args
@@ -51,7 +54,10 @@ int main(int argc, char **argv)
         }
     }
     else {
-        pthread_barrier_init(&barrier, NULL, ps_args->n_threads);
+        // pthread_barrier_init(&barrier, NULL, ps_args->n_threads);
+
+        custom_barrier.init(ps_args->n_threads);
+
         start_threads(threads, opts.n_threads, ps_args, compute_prefix_sum);
 
         // Wait for threads to finish
