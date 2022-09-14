@@ -22,11 +22,11 @@ void get_opts(int argc,
         {"out", required_argument, NULL, 'o'},
         {"n_threads", required_argument, NULL, 'n'},
         {"loops", required_argument, NULL, 'l'},
-        {"spin", no_argument, NULL, 's'}
+        {"spin", optional_argument, NULL, 's'}
     };
 
     int ind, c;
-    while ((c = getopt_long(argc, argv, "i:o:n:p:l:", l_opts, &ind)) != -1)
+    while ((c = getopt_long(argc, argv, "i:o:n:p:l:s", l_opts, &ind)) != -1)
     {
         switch (c)
         {

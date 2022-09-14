@@ -54,10 +54,7 @@ int main(int argc, char **argv)
         }
     }
     else {
-        // pthread_barrier_init(&barrier, NULL, ps_args->n_threads);
-
-        custom_barrier.init(ps_args->n_threads);
-
+        ps_args->spin? custom_barrier.init(ps_args->n_threads):(void)pthread_barrier_init(&barrier, NULL, ps_args->n_threads);
         start_threads(threads, opts.n_threads, ps_args, compute_prefix_sum);
 
         // Wait for threads to finish
